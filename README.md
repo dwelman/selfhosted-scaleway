@@ -1,236 +1,151 @@
-# Self-hosted Services on Scaleway
+# Self-hosted Gitea on Scaleway
 
-This repository contains the infrastructure as code (IaC) for self-hosting services on Scaleway.
+This repository provides infrastructure as code (IaC) to deploy a complete Gitea Git hosting service on Scaleway cloud platform with managed MySQL database.
 
-## Local Development with Docker Compose
+## 🚀 Scaleway Cloud Deployment (Recommended)
 
-### Gitea Git Service with MySQL
+Deploy your Gitea instance on Scaleway with managed MySQL database, automatic scaling, and HTTPS.
 
-This docker-compose setup provides a complete Gitea Git service with MySQL 8.0 database backend.
+### What Gets Deployed
 
-#### Quick Start
-
-1. **Navigate to the gitea directory and copy the environment file:**
-   ```bash
-   cd gittea
-   cp .env.example .env
-   ```
-
-2. **Edit the `.env` file** with your preferred database credentials:
-   ```bash
-   nano .env
-   ```
-
-3. **Start the services:**
-   ```bash
-   cd .. # back to project root
-   make gitea.start
-   ```
-
-4. **Access Gitea:**
-   - Open http://localhost:8080 in your browser
-   - Follow the initial setup wizard
-   - Database settings will be pre-configured
-
-#### Services
-
-**Gitea Server:**
-- **Web Interface:** http://localhost:8080
-- **SSH Git Access:** localhost:2221
-- **Rootless container** for security
-
-**MySQL Database:**
-- **Host:** localhost:3306
-- **Database:** selfhosted (or as configured in .env)
-- **Username:** selfhosted_user (or as configured in .env)
-- **Password:** As set in .env file
-
-#### Features
-
-- **Gitea 1.25.2** rootless container
-- **MySQL 8.0** with persistent data storage
-- **Health checks** to ensure database is ready
-- **Environment variable** configuration
-- **Initialization scripts** support in `gittea/init/`
-- **Persistent data** for both Gitea and MySQL
-- **Custom network** for service communication
-
-#### Useful Commands
-
-**Using Make (Recommended):**
-```bash
-# Start Gitea and MySQL services
-make gitea.start
-
-# View logs for all services
-make gitea.logs
-
-# Stop and clean up everything (removes data!)
-make gitea.clean
-
-# Show available commands
-make help
-```
-
-**Direct Docker Compose (from gittea/ directory):**
-```bash
-# Start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-
-# Stop and remove volumes (WARNING: This will delete your data)
-docker-compose down -v
-```
-
-#### Adding MySQL Initialization Scripts
-
-Place any `.sql` files in the `gittea/init/` directory. These will be executed in alphabetical order when the MySQL container starts for the first time.
-
-#### Data Persistence
-
-- **Gitea data:** Stored in `gittea/data/`
-- **Gitea config:** Stored in `gittea/config/`
-- **MySQL data:** Stored in Docker volume `mysql_data`
-
-## Scaleway Deployment with Terraform
-
-Deploy a managed MySQL database on Scaleway cloud infrastructure.
+- **Scaleway RDB MySQL 8** - Managed database with automated backups
+- **Scaleway Container** - Auto-scaling Gitea service with HTTPS endpoint
+- **Secure Configuration** - Separate admin and application credentials
+- **Cost Optimized** - Scales to zero when not in use, pay for actual usage
 
 ### Prerequisites
 
 1. **Scaleway Account**: Sign up at [scaleway.com](https://scaleway.com)
-2. **Terraform**: Install from [terraform.io](https://terraform.io/downloads.html)
-3. **Scaleway CLI** (optional): Install with `brew install scw` (macOS)
+2. **OpenTofu/Terraform**: Install [OpenTofu](https://opentofu.org/docs/intro/install/) or [Terraform](https://terraform.io/downloads.html)
 
 ### Authentication Setup
 
-You'll need your Scaleway credentials from the [Scaleway Console](https://console.scaleway.com/):
+Get your Scaleway credentials from the [Scaleway Console](https://console.scaleway.com/):
 
 1. **API Keys**: Go to IAM → API Keys
-2. **Organization ID**: Found in Organization Settings
+2. **Organization ID**: Found in Organization Settings  
 3. **Project ID**: Found in your project dashboard
 
-#### Option 1: Configure in terraform.tfvars (Recommended)
-```bash
-cd terraform
-cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars with your actual credentials
-```
+### Quick Deploy
 
-#### Option 2: Environment Variables
-```bash
-export SCW_ACCESS_KEY="your-access-key"
-export SCW_SECRET_KEY="your-secret-key"
-export SCW_DEFAULT_ORGANIZATION_ID="your-organization-id"
-export SCW_DEFAULT_PROJECT_ID="your-project-id"
-```
-
-#### Option 3: Scaleway CLI
-```bash
-scw init
-```
-
-### Deployment Steps
-
-1. **Copy and configure variables:**
+1. **Configure your credentials:**
    ```bash
-   cd gittea/terraform
+   cd gitea/terraform
    cp terraform.tfvars.example terraform.tfvars
    nano terraform.tfvars
    ```
 
-2. **Configure credentials and passwords** in `terraform.tfvars`:
+2. **Add your Scaleway credentials and secure passwords:**
    ```hcl
-   # Add your Scaleway credentials
+   # Scaleway Authentication
    access_key = "your-scaleway-access-key"
    secret_key = "your-scaleway-secret-key" 
    organization_id = "your-organization-id"
    project_id = "your-project-id"
    
-   # Set a secure MySQL password
-   mysql_password = "your-very-secure-password-here"
+   # Security credentials (generate strong passwords)
+   mysql_password = "secure-admin-password-here"
+   mysql_app_password = "secure-app-password-here"
+   gitea_secret_key = "64-char-secret-key-generate-with-openssl-rand-hex-32"
    ```
 
-3. **Initialize and deploy:**
+3. **Deploy your Gitea infrastructure:**
    ```bash
-   make gitea.tf-init     # Initialize Terraform
-   make gitea.tf-plan     # Review deployment plan
-   make gitea.tf-apply    # Deploy infrastructure
+   make gitea.tofu-init     # Initialize OpenTofu
+   make gitea.tofu-plan     # Review deployment plan
+   make gitea.tofu-apply    # Deploy infrastructure
    ```
 
-### Terraform Commands
+4. **Access your Gitea instance:**
+   ```bash
+   # Get your Gitea URL
+   cd gitea/terraform
+   tofu output gitea_url
+   ```
 
-**Using Make (Recommended):**
+### Available Commands
+
+**OpenTofu (Recommended):**
 ```bash
-# Initialize Terraform
-make gitea.tf-init
-
-# Plan deployment
-make gitea.tf-plan
-
-# Deploy infrastructure
-make gitea.tf-apply
-
-# Destroy infrastructure
-make gitea.tf-destroy
+make gitea.tofu-init     # Initialize OpenTofu
+make gitea.tofu-plan     # Plan deployment
+make gitea.tofu-apply    # Deploy infrastructure  
+make gitea.tofu-destroy  # Destroy infrastructure
 ```
 
-**Direct Terraform (from gittea/terraform/ directory):**
+**Terraform (Alternative):**
 ```bash
-cd gittea/terraform
-terraform init
-terraform plan
-terraform apply
-terraform destroy
+make gitea.tf-init       # Initialize Terraform
+make gitea.tf-plan       # Plan deployment
+make gitea.tf-apply      # Deploy infrastructure
+make gitea.tf-destroy    # Destroy infrastructure
 ```
 
-### Infrastructure Details
+### Post-Deployment Setup
 
-The Terraform configuration creates:
+1. **Open your Gitea URL** (from `tofu output gitea_url`)
+2. **Complete initial setup** - database settings are pre-configured
+3. **Create admin account** and configure your Git hosting service
+4. **Start using Git** - push repositories, manage users, etc.
 
-- **Scaleway RDB MySQL 8 Instance** with:
-  - `DB-DEV-S` node type (configurable)
-  - 20GB SSD storage
-  - Daily backups (7-day retention)
-  - High availability disabled (for cost optimization)
+## 🏠 Local Development (Docker Compose)
 
-- **Database and Users**:
-  - Initial database: `selfhosted`
-  - Admin user: `admin`
-  - Application user: `selfhosted_user`
+For local development and testing, you can run Gitea with MySQL using Docker Compose.
 
-- **Outputs**:
-  - Database endpoint and port
-  - Connection strings
-  - User credentials
+### Quick Local Setup
 
-### Connecting Your Application
+1. **Configure environment:**
+   ```bash
+   cd gittea
+   cp .env.example .env
+   nano .env  # Set your preferred passwords
+   ```
 
-After deployment, update your application configuration with the Terraform outputs:
+2. **Start services:**
+   ```bash
+   cd ..  # back to project root
+   make gitea.start
+   ```
+
+3. **Access locally:**
+   - **Gitea Web**: http://localhost:8080
+   - **SSH Git**: localhost:2221  
+   - **MySQL**: localhost:3306
+
+### Local Commands
 
 ```bash
-# Get connection details
-cd gittea/terraform
-terraform output mysql_endpoint
-terraform output mysql_port
-terraform output mysql_connection_string
+make gitea.start    # Start Gitea and MySQL
+make gitea.logs     # View service logs
+make gitea.clean    # Stop and remove all data
+make help          # Show all commands
 ```
 
-### Cost Optimization
+### Data Persistence
 
-- **Development**: Use `DB-DEV-S` (smallest instance)
-- **Production**: Consider `DB-GP-XS` or larger based on needs
-- **Backups**: Adjust retention period in `terraform.tfvars`
+Local data is stored in:
+- `gittea/data/` - Gitea repositories and settings
+- `gittea/config/` - Gitea configuration files
+- Docker volume - MySQL database data
 
-## Next Steps
+**Note**: For production use, deploy to Scaleway cloud instead of running locally.
 
-- Complete Gitea initial setup via web interface
-- Connect Gitea to Scaleway MySQL database
-- Set up CI/CD pipelines
-- Add additional services (e.g., reverse proxy, monitoring)
-- Configure domain and SSL certificates
+## 🛠️ Development & Contributing
+
+### Project Structure
+
+```
+gitea/
+├── terraform/          # Infrastructure as Code
+│   ├── main.tf         # Scaleway resources
+│   ├── variables.tf    # Configuration variables
+│   ├── outputs.tf      # Deployment outputs
+│   └── terraform.tfvars.example
+├── docker-compose.yml  # Local development
+├── .env.example       # Local environment template
+└── init/              # MySQL initialization scripts
+```
+
+### Available Make Targets
+
+Run `make help` to see all available commands for both cloud deployment and local development.
