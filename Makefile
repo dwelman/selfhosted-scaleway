@@ -55,11 +55,11 @@ gitea.tofu-plan:
 
 gitea.tofu-apply:
 	@echo "Applying OpenTofu configuration..."
-	cd gitea/terraform && tofu apply
+	cd gitea/terraform && tofu apply --auto-approve
 
 gitea.tofu-destroy:
 	@echo "Destroying OpenTofu resources..."
-	cd gitea/terraform && tofu destroy
+	cd gitea/terraform && tofu destroy --auto-approve
 
 # Terraform commands
 gitea.tf-init:
@@ -72,8 +72,8 @@ gitea.tf-plan:
 
 gitea.tf-apply:
 	@echo "Applying Terraform configuration..."
-	cd gitea/terraform && terraform apply
+	cd gitea/terraform && terraform apply --auto-approve
 
 gitea.tf-destroy:
 	@echo "Destroying Terraform resources..."
-	cd gitea/terraform && terraform destroy
+	cd gitea/terraform && terraform destroy --auto-approve
