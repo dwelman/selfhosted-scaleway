@@ -76,6 +76,18 @@ variable "mysql_password" {
   sensitive   = true
 }
 
+variable "mysql_app_username" {
+  description = "MySQL application username"
+  type        = string
+  default     = "gitea_app"
+}
+
+variable "mysql_app_password" {
+  description = "MySQL application user password"
+  type        = string
+  sensitive   = true
+}
+
 variable "mysql_database_name" {
   description = "Initial database name to create"
   type        = string
@@ -100,4 +112,11 @@ variable "backup_schedule_minute" {
     condition     = var.backup_schedule_minute >= 0 && var.backup_schedule_minute <= 59
     error_message = "Backup schedule minute must be between 0 and 59."
   }
+}
+
+# Gitea Configuration Variables
+variable "gitea_secret_key" {
+  description = "Gitea secret key for security (generate with: openssl rand -hex 32)"
+  type        = string
+  sensitive   = true
 }
