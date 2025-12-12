@@ -16,8 +16,16 @@ mysql_node_type = "DB-DEV-S"  # Smallest instance for testing
 mysql_username = "admin"
 mysql_database_name = "gitea"
 
-# Security - Set a strong password
-mysql_password = "CHANGE_ME_TO_SECURE_PASSWORD"
+# Security - Set strong passwords and secret keys
+# Admin credentials (for database administration)
+mysql_password = "CHANGE_ME_TO_SECURE_ADMIN_PASSWORD"
+
+# Application credentials (for Gitea application)
+mysql_app_username = "gitea_app"
+mysql_app_password = "CHANGE_ME_TO_SECURE_APP_PASSWORD"
+
+# Gitea Configuration
+gitea_secret_key = "CHANGE_ME_TO_SECURE_SECRET_KEY_64_CHARS_LONG_GENERATE_WITH_OPENSSL"
 
 # Backup Configuration
 backup_schedule_hour = 3
