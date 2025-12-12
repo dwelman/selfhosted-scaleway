@@ -1,0 +1,24 @@
+# Scaleway Authentication (get these from Scaleway console)
+access_key = "SCW_ACCESS_KEY_HERE"
+secret_key = "SCW_SECRET_KEY_HERE"
+organization_id = "SCW_ORGANIZATION_ID_HERE"
+project_id = "SCW_PROJECT_ID_HERE"
+
+# Scaleway Configuration
+zone = "nl-ams-1"
+region = "nl-ams"
+
+# Project Configuration
+project_name = "selfhosted-gitea"
+
+# MySQL Configuration
+mysql_node_type = "DB-DEV-S"  # Smallest instance for testing
+mysql_username = "admin"
+mysql_database_name = "gitea"
+
+# Security - Set a strong password
+mysql_password = "CHANGE_ME_TO_SECURE_PASSWORD"
+
+# Backup Configuration
+backup_schedule_hour = 3
+backup_schedule_minute = 0

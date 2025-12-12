@@ -39,5 +39,5 @@ terraform.rc
 .env
 
 # Gitea directories
-gittea/data/
-gittea/config/
+gitea/data/
+gitea/config/

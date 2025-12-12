@@ -24,7 +24,7 @@ This docker-compose setup provides a complete Gitea Git service with MySQL 8.0 d
 3. **Start the services:**
    ```bash
    cd .. # back to project root
-   make docker
+   make gitea.start
    ```
 
 4. **Access Gitea:**
@@ -60,15 +60,13 @@ This docker-compose setup provides a complete Gitea Git service with MySQL 8.0 d
 **Using Make (Recommended):**
 ```bash
 # Start Gitea and MySQL services
-make docker
-# or
-make gitea
+make gitea.start
 
 # View logs for all services
-make logs
+make gitea.logs
 
 # Stop and clean up everything (removes data!)
-make clean
+make gitea.clean
 
 # Show available commands
 make help
@@ -99,9 +97,140 @@ Place any `.sql` files in the `gittea/init/` directory. These will be executed i
 - **Gitea config:** Stored in `gittea/config/`
 - **MySQL data:** Stored in Docker volume `mysql_data`
 
+## Scaleway Deployment with Terraform
+
+Deploy a managed MySQL database on Scaleway cloud infrastructure.
+
+### Prerequisites
+
+1. **Scaleway Account**: Sign up at [scaleway.com](https://scaleway.com)
+2. **Terraform**: Install from [terraform.io](https://terraform.io/downloads.html)
+3. **Scaleway CLI** (optional): Install with `brew install scw` (macOS)
+
+### Authentication Setup
+
+You'll need your Scaleway credentials from the [Scaleway Console](https://console.scaleway.com/):
+
+1. **API Keys**: Go to IAM → API Keys
+2. **Organization ID**: Found in Organization Settings
+3. **Project ID**: Found in your project dashboard
+
+#### Option 1: Configure in terraform.tfvars (Recommended)
+```bash
+cd terraform
+cp terraform.tfvars.example terraform.tfvars
+# Edit terraform.tfvars with your actual credentials
+```
+
+#### Option 2: Environment Variables
+```bash
+export SCW_ACCESS_KEY="your-access-key"
+export SCW_SECRET_KEY="your-secret-key"
+export SCW_DEFAULT_ORGANIZATION_ID="your-organization-id"
+export SCW_DEFAULT_PROJECT_ID="your-project-id"
+```
+
+#### Option 3: Scaleway CLI
+```bash
+scw init
+```
+
+### Deployment Steps
+
+1. **Copy and configure variables:**
+   ```bash
+   cd gittea/terraform
+   cp terraform.tfvars.example terraform.tfvars
+   nano terraform.tfvars
+   ```
+
+2. **Configure credentials and passwords** in `terraform.tfvars`:
+   ```hcl
+   # Add your Scaleway credentials
+   access_key = "your-scaleway-access-key"
+   secret_key = "your-scaleway-secret-key" 
+   organization_id = "your-organization-id"
+   project_id = "your-project-id"
+   
+   # Set a secure MySQL password
+   mysql_password = "your-very-secure-password-here"
+   ```
+
+3. **Initialize and deploy:**
+   ```bash
+   make gitea.tf-init     # Initialize Terraform
+   make gitea.tf-plan     # Review deployment plan
+   make gitea.tf-apply    # Deploy infrastructure
+   ```
+
+### Terraform Commands
+
+**Using Make (Recommended):**
+```bash
+# Initialize Terraform
+make gitea.tf-init
+
+# Plan deployment
+make gitea.tf-plan
+
+# Deploy infrastructure
+make gitea.tf-apply
+
+# Destroy infrastructure
+make gitea.tf-destroy
+```
+
+**Direct Terraform (from gittea/terraform/ directory):**
+```bash
+cd gittea/terraform
+terraform init
+terraform plan
+terraform apply
+terraform destroy
+```
+
+### Infrastructure Details
+
+The Terraform configuration creates:
+
+- **Scaleway RDB MySQL 8 Instance** with:
+  - `DB-DEV-S` node type (configurable)
+  - 20GB SSD storage
+  - Daily backups (7-day retention)
+  - High availability disabled (for cost optimization)
+
+- **Database and Users**:
+  - Initial database: `selfhosted`
+  - Admin user: `admin`
+  - Application user: `selfhosted_user`
+
+- **Outputs**:
+  - Database endpoint and port
+  - Connection strings
+  - User credentials
+
+### Connecting Your Application
+
+After deployment, update your application configuration with the Terraform outputs:
+
+```bash
+# Get connection details
+cd gittea/terraform
+terraform output mysql_endpoint
+terraform output mysql_port
+terraform output mysql_connection_string
+```
+
+### Cost Optimization
+
+- **Development**: Use `DB-DEV-S` (smallest instance)
+- **Production**: Consider `DB-GP-XS` or larger based on needs
+- **Backups**: Adjust retention period in `terraform.tfvars`
+
 ## Next Steps
 
 - Complete Gitea initial setup via web interface
-- Create Terraform configurations for Scaleway deployment
+- Connect Gitea to Scaleway MySQL database
 - Set up CI/CD pipelines
 - Add additional services (e.g., reverse proxy, monitoring)
+- Configure domain and SSL certificates
